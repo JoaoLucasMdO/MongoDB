@@ -1,0 +1,51 @@
+use('DadosGeo')
+//Listar a UF, nome e Longitude de todos os estados com a Longitude menor que -63*
+
+db.estados.find({longitude: {$lt: -63}},{_id:0, uf:1, nome:1, longitude:1})
+
+use('DadosGeo')
+db.estados.find({codigo_uf: {$gte: 10, $lte: 20}},{_id:0, uf:1, codigo_uf:1, nome:1})
+
+use('DadosGeo')
+db.estados.find({$and:
+                [{codigo_uf: {$gte: 10}},
+                 {codigo_uf: {$lte: 20}}
+                ]},
+                {_id:0, uf:1, codigo_uf:1, nome:1}).count()
+
+//Retorne todos os estados cujo nome comece com rio e retorne em ordem alfabética
+use('DadosGeo')
+db.estados.find({nome: /^rio/i},{}).sort({nome:1}) 
+
+/* Retorne tods os municípios que contenham no nome Itu, 
+retornando em ordem alfabética, limitando a 5 registros */
+use('DadosGeo')
+db.municipios.find({nome: /Itu/i},{})
+.sort({nome:1})
+.skip(10)
+.limit(10)
+
+// Listando todos os municipios pertences a uma uf
+use('DadosGeo')
+db.estados.aggregate([
+    {
+        $lookup: {
+          from: 'municipios',
+          localField: 'codigo_uf',
+          foreignField: 'codigo_uf',
+          as: 'lista_municipios'
+        }
+    }
+])
+
+use('DadosGeo')
+db.municipios.aggregate([
+    {
+        $lookup: {
+          from: 'estados',
+          localField: 'codigo_uf',
+          foreignField: 'codigo_uf',
+          as: 'detalhe_estados'
+        }
+    }
+])
